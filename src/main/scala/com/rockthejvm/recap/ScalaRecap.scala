@@ -16,11 +16,11 @@ object ScalaRecap extends App {
     */
 
   // declaring a value
-  val purposeOfLife: Int = 42
+  val purposeOfLife = 42
   //               ^^^^^ the type here is optional as the compiler can infer it from the right hand side
 
   // can't change a value
-  // purposeOfLife = 43 // nope!
+//   purposeOfLife = 43 // nope!
 
   // variables can be changed
   var mood = "sad"
@@ -75,7 +75,7 @@ object ScalaRecap extends App {
   // method notation
   val alice = Person("Alice", 23)
   val lamborghini = new Supercar
-  alice drives lamborghini // <-- infix notation
+  alice drives lamborghini // <-- infix notation alice.drives(lamborghini)
 
   // generics
   class MySet[+T]
