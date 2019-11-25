@@ -25,6 +25,9 @@ sealed abstract class RList[+T] {
 
   // concatenate another list to this one
   def ++[S >: T](anotherList: RList[S]): RList[S]
+
+  // remove an element at a given index, return a NEW list
+  def removeAt(index: Int): RList[T]
 }
 
 case object RNil extends RList[Nothing] {
@@ -47,6 +50,9 @@ case object RNil extends RList[Nothing] {
 
   // append another list
   def ++[S >: Nothing](anotherList: RList[S]): RList[S] = anotherList
+
+  // remove an element
+  override def removeAt(index: Int): RList[Nothing] = RNil
 }
 
 case class ::[+T](override val head: T, override val tail: RList[T]) extends RList[T] {
@@ -141,6 +147,7 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
       length of this list = N
       length of the other list = M
      */
+    @tailrec
     def concatTailrec(remainingList: RList[S], acc: RList[S]): RList[S] = {
       if (remainingList.isEmpty) acc
       else concatTailrec(remainingList.tail, remainingList.head :: acc)
@@ -148,6 +155,28 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
 
     concatTailrec(anotherList, this.reverse).reverse
   }
+
+  // remove an element
+  override def removeAt(index: Int): RList[T] = {
+    /*
+      [1,2,3,4,5].removeAt(2) = removeAtTailrec([1,2,3,4,5], 0, [])
+      = removeAtTailrec([2,3,4,5], 1, [1])
+      = removeAtTailrec([3,4,5], 2, [2,1])
+      = [2,1].reverse ++ [4,5]
+
+      Complexity: O(N)
+     */
+    @tailrec
+    def removeAtTailrec(remaining: RList[T], currentIndex: Int, predecessors: RList[T]): RList[T] = {
+      if (currentIndex == index) predecessors.reverse ++ remaining.tail
+      else if (remaining.isEmpty) predecessors.reverse
+      else removeAtTailrec(remaining.tail, currentIndex + 1, remaining.head :: predecessors)
+    }
+
+    if (index < 0) this
+    else removeAtTailrec(this, 0, RNil)
+  }
+
 }
 
 object RList {
@@ -181,5 +210,8 @@ object ListProblems extends App {
 
   // test concat
   println(aSmallList ++ aLargeList)
+
+  // test removeAt
+  println(aLargeList.removeAt(13))
 
 }
