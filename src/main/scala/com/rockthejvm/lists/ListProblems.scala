@@ -39,6 +39,9 @@ sealed abstract class RList[+T] {
     */
   // run-length encoding
   def rle: RList[(T, Int)]
+
+  // duplicate each element a number of times in a row
+  def duplicateEach(k: Int): RList[T]
 }
 
 case object RNil extends RList[Nothing] {
@@ -73,7 +76,11 @@ case object RNil extends RList[Nothing] {
   /**
     * Medium difficulty problems
     */
+  // run-length encoding
   override def rle: RList[(Nothing, Int)] = RNil
+
+  // duplicate each element a number of times in a row
+  override def duplicateEach(k: Int): RList[Nothing] = RNil
 }
 
 case class ::[+T](override val head: T, override val tail: RList[T]) extends RList[T] {
@@ -265,6 +272,7 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
   /**
     * Medium difficulty problems
     */
+  // run-length encoding
   override def rle: RList[(T, Int)] = {
     /*
       [1,1,1,2,2,3,4,4,4,5].rle = rleTailrec([1,1,2,2,3,4,4,4,5], (1, 1), []) =
@@ -287,6 +295,31 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     }
 
     rleTailrec(this.tail, (this.head, 1), RNil).reverse
+  }
+
+  // duplicate each element a number of times in a row
+  override def duplicateEach(k: Int): RList[T] = {
+    /*
+      [1,2].duplicateEach(3) = duplicateTailrec([2], 1, 0, [])
+      = duplicateTailrec([2], 1, 1, [1])
+      = duplicateTailrec([2], 1, 2, [1,1])
+      = duplicateTailrec([2], 1, 3, [1,1,1])
+      = duplicateTailrec([], 2, 0, [1,1,1])
+      = duplicateTailrec([], 2, 1, [2,1,1,1])
+      = duplicateTailrec([], 2, 2, [2,2,1,1,1])
+      = duplicateTailrec([], 2, 3, [2,2,2,1,1,1])
+
+      Complexity: O(N * K)
+     */
+    @tailrec
+    def duplicateTailrec(remaining: RList[T], currentElement: T, nDuplications: Int, accumulator: RList[T]): RList[T] = {
+      if (remaining.isEmpty && nDuplications == k) accumulator.reverse
+      else if (remaining.isEmpty) duplicateTailrec(remaining, currentElement, nDuplications + 1, currentElement :: accumulator)
+      else if (nDuplications == k) duplicateTailrec(remaining.tail, remaining.head, 0, accumulator)
+      else duplicateTailrec(remaining, currentElement, nDuplications + 1, currentElement :: accumulator)
+    }
+
+    duplicateTailrec(this.tail, this.head, 0, RNil)
   }
 }
 
@@ -341,6 +374,8 @@ object ListProblems extends App {
   def testMediumDifficultyFunctions() = {
     // run-length encoding
     println((1 :: 1 :: 1 :: 2 :: 3 :: 3 :: 4 :: 5 :: 5 :: 5 :: RNil).rle)
+    // duplicateEach
+    println(aSmallList.duplicateEach(4))
   }
 
   testMediumDifficultyFunctions()
