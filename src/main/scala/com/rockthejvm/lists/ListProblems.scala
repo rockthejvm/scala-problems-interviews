@@ -49,6 +49,12 @@ sealed abstract class RList[+T] {
 
   // random sample
   def sample(k: Int): RList[T]
+
+  /**
+    * Hard problems
+    */
+  // sorting the list in the order defined by the Ordering object
+  def sorted[S >: T](ordering: Ordering[S]): RList[S]
 }
 
 case object RNil extends RList[Nothing] {
@@ -94,6 +100,12 @@ case object RNil extends RList[Nothing] {
 
   // random samples
   override def sample(k: Int): RList[Nothing] = RNil
+
+  /**
+    * Hard problems
+    */
+  // sorting
+  override def sorted[S >: Nothing](ordering: Ordering[S]): RList[S] = RNil
 }
 
 case class ::[+T](override val head: T, override val tail: RList[T]) extends RList[T] {
@@ -257,7 +269,42 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
       else flatMapTailrec(remaining.tail, f(remaining.head).reverse ++ accumulator)
     }
 
-    flatMapTailrec(this, RNil)
+    /*
+      [1,2,3].flatMap(x => [x, 2 * x]) = betterFlatMap([1,2,3], [])
+      = betterFlatMap([2,3], [[2,1]])
+      = betterFlatMap([3], [[4,2], [2,1]])
+      = betterFlatMap([], [[6,3], [4,2], [2,1]])
+      = concatenateAll([[6,3], [4,2], [2,1]], [], [])
+      = concatenateAll([[4,2], [2,1]], [6,3], [])
+      = concatenateAll([[4,2], [2,1]], [3], [6])
+      = concatenateAll([[4,2], [2,1]], [], [3,6])
+      = concatenateAll([[2,1]], [4,2], [3,6])
+      = concatenateAll([[2,1]], [2], [4,3,6])
+      = concatenateAll([[2,1]], [], [2,4,3,6])
+      = concatenateAll([], [2,1], [2,4,3,6])
+      = concatenateAll([], [1], [2,2,4,3,6])
+      = concatenateAll([], [], [1,2,2,4,3,6])
+      = [1,2,2,4,3,6]
+
+      Complexity: O(N + Z)
+     */
+    @tailrec
+    def betterFlatMap(remaining: RList[T], accumulator: RList[RList[S]]): RList[S] = {
+      if (remaining.isEmpty) concatenateAll(accumulator, RNil, RNil)
+      else betterFlatMap(remaining.tail, f(remaining.head).reverse :: accumulator)
+    }
+
+    /*
+      Complexity: O(Z)
+     */
+    @tailrec
+    def concatenateAll(elements: RList[RList[S]], currentList: RList[S], accumulator: RList[S]): RList[S] = {
+      if (currentList.isEmpty && elements.isEmpty) accumulator
+      else if (currentList.isEmpty) concatenateAll(elements.tail, elements.head, accumulator)
+      else concatenateAll(elements, currentList.tail, currentList.head :: accumulator)
+    }
+
+    betterFlatMap(this, RNil)
   }
 
   override def filter(predicate: T => Boolean): RList[T] = {
@@ -405,6 +452,46 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     if (k < 0) RNil
     else sampleElegant
   }
+
+  /**
+    * Hard problems
+    */
+  override def sorted[S >: T](ordering: Ordering[S]): RList[S] = {
+    /*
+      insertSorted(4, [], [1,2,3,5]) =
+      insertSorted(4, [1], [2,3,5]) =
+      insertSorted(4, [2,1], [3,5]) =
+      insertSorted(4, [3,2,1], [5]) =
+      [3,2,1].reverse + (4 :: [5]) =
+      [1,2,3,4,5]
+
+      Complexity: O(N)
+     */
+    @tailrec
+    def insertSorted(element: T, before: RList[S], after: RList[S]): RList[S] = {
+      if (after.isEmpty || ordering.lteq(element, after.head)) before.reverse ++ (element :: after)
+      else insertSorted(element, after.head :: before, after.tail)
+    }
+
+    /*
+      [3,1,4,2,5].sorted = insertSortTailrec([3,1,4,2,5], []) =
+        = insertSortTailrec([1,4,2,5], [3])
+        = insertSortTailrec([4,2,5], [1,3])
+        = insertSortTailrec([2,5], [1,3,4])
+        = insertSortTailrec([5], [1,2,3,4])
+        = insertSortTailrec([], [1,2,3,4,5])
+        = [1,2,3,4,5]
+
+        Complexity: O(N^2)
+     */
+    @tailrec
+    def insertSortTailrec(remaining: RList[T], acc: RList[S]): RList[S] = {
+      if (remaining.isEmpty) acc
+      else insertSortTailrec(remaining.tail, insertSorted(remaining.head, RNil, acc))
+    }
+
+    insertSortTailrec(this, RNil)
+  }
 }
 
 object RList {
@@ -453,9 +540,6 @@ object ListProblems extends App {
     println(aLargeList.filter(x => x % 2 == 0))
   }
 
-  /**
-    * Medium difficulty functions
-    */
   def testMediumDifficultyFunctions() = {
     // run-length encoding
     println((1 :: 1 :: 1 :: 2 :: 3 :: 3 :: 4 :: 5 :: 5 :: 5 :: RNil).rle)
@@ -470,7 +554,22 @@ object ListProblems extends App {
 
     // random samples
     println(aLargeList.sample(10))
+
+    // better flatMap
+    println(aSmallList.flatMap(x => x :: (2 * x) :: RNil))
+    val time = System.currentTimeMillis()
+    aLargeList.flatMap(x => x :: (2 * x) :: RNil) // 7 ms
+    println(System.currentTimeMillis() - time)
   }
 
-  testMediumDifficultyFunctions()
+  def testHardFunctions() = {
+    val anUnorderedList = 3 :: 1 :: 2 :: 4 :: 5 :: RNil
+    val ordering = Ordering.fromLessThan[Int](_ < _)
+
+    // insertion sort
+    println(anUnorderedList.sorted(ordering))
+    println(aLargeList.sample(10).sorted(ordering))
+  }
+
+  testHardFunctions()
 }
