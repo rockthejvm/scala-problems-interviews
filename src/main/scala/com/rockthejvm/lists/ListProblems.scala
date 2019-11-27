@@ -56,6 +56,7 @@ sealed abstract class RList[+T] {
   // sorting the list in the order defined by the Ordering object
   def insertionSort[S >: T](ordering: Ordering[S]): RList[S]
   def mergeSort[S >: T](ordering: Ordering[S]): RList[S]
+  def quickSort[S >: T](ordering: Ordering[S]): RList[S]
 }
 
 case object RNil extends RList[Nothing] {
@@ -108,6 +109,7 @@ case object RNil extends RList[Nothing] {
   // sorting
   override def insertionSort[S >: Nothing](ordering: Ordering[S]): RList[S] = RNil
   override def mergeSort[S >: Nothing](ordering: Ordering[S]): RList[S] = RNil
+  override def quickSort[S >: Nothing](ordering: Ordering[S]): RList[S] = RNil
 }
 
 case class ::[+T](override val head: T, override val tail: RList[T]) extends RList[T] {
@@ -548,6 +550,61 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
 
     mergeSortTailrec(this.map(x => x :: RNil), RNil)
   }
+
+  override def quickSort[S >: T](ordering: Ordering[S]): RList[S] = {
+    /*
+      partition([1,2,5,4], 3, [], []) =
+      partition([2,5,4], 3, [1], []) =
+      partition([5,4], 3, [2,1], []) =
+      partition([4], 3, [2,1], [5]) =
+      partition([], 3, [2,1], [4,5])
+      = ([2,1], [4,5])
+     */
+    @tailrec
+    def partition(list: RList[T], pivot: T, smaller: RList[T], larger: RList[T]): (RList[T], RList[T]) = {
+      if (list.isEmpty) (smaller, larger)
+      else if (ordering.lteq(list.head, pivot)) partition(list.tail, pivot, list.head :: smaller, larger)
+      else partition(list.tail, pivot, smaller, list.head :: larger)
+    }
+
+    /*
+      [3,1,2,5,4].quickSort
+
+      partition([1,2,5,4], 3, [], []) -> ([1,2], [5,4])
+      partition([2], 1, [], []) -> ([], [2])
+      partition([4], 5, [], []) -> ([4], [])
+
+      quickSortTailrec([[3,1,2,5,4]], []) =
+      quickSortTailrec([[1,2], [3], [5,4]], []) =
+      quickSortTailrec([[], [1], [2], [3], [5,4]], []) =
+      quickSortTailrec([[1], [2], [3], [5,4]], []) =
+      quickSortTailrec([[2], [3], [5,4]], [[1]]) =
+      quickSortTailrec([[3], [5,4]], [[2], [1]]) =
+      quickSortTailrec([[5,4]], [[3],[2],[1]]) =
+      quickSortTailrec([[4], [5], []], [[3],[2],[1]]) =
+        ...
+      quickSortTailrec([], [[5], [4], [3], [2], [1]]) =
+      [1,2,3,4,5]
+
+      Complexity: O(N^2) in the worst case (when the list is sorted)
+      on average O(N * log(N))
+     */
+    @tailrec
+    def quickSortTailrec(remainingLists: RList[RList[T]], accumulator: RList[RList[T]]): RList[T] = {
+      if (remainingLists.isEmpty) accumulator.flatMap(smallList => smallList).reverse
+      else if (remainingLists.head.isEmpty) quickSortTailrec(remainingLists.tail, accumulator)
+      else if (remainingLists.head.tail.isEmpty) quickSortTailrec(remainingLists.tail, remainingLists.head :: accumulator)
+      else {
+        val list = remainingLists.head
+        val pivot = list.head
+        val listToSplit = list.tail
+        val (smaller, larger) = partition(listToSplit, pivot, RNil, RNil)
+        quickSortTailrec(smaller :: (pivot :: RNil) :: larger :: remainingLists.tail, accumulator)
+      }
+    }
+
+    quickSortTailrec(this :: RNil, RNil)
+  }
 }
 
 object RList {
@@ -628,6 +685,8 @@ object ListProblems extends App {
     println(listToSort.insertionSort(ordering))
     // merge sort
     println(listToSort.mergeSort(ordering))
+    // quick sort
+    println(listToSort.quickSort(ordering))
   }
 
   testHardFunctions()
