@@ -54,7 +54,8 @@ sealed abstract class RList[+T] {
     * Hard problems
     */
   // sorting the list in the order defined by the Ordering object
-  def sorted[S >: T](ordering: Ordering[S]): RList[S]
+  def insertionSort[S >: T](ordering: Ordering[S]): RList[S]
+  def mergeSort[S >: T](ordering: Ordering[S]): RList[S]
 }
 
 case object RNil extends RList[Nothing] {
@@ -105,7 +106,8 @@ case object RNil extends RList[Nothing] {
     * Hard problems
     */
   // sorting
-  override def sorted[S >: Nothing](ordering: Ordering[S]): RList[S] = RNil
+  override def insertionSort[S >: Nothing](ordering: Ordering[S]): RList[S] = RNil
+  override def mergeSort[S >: Nothing](ordering: Ordering[S]): RList[S] = RNil
 }
 
 case class ::[+T](override val head: T, override val tail: RList[T]) extends RList[T] {
@@ -456,7 +458,7 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
   /**
     * Hard problems
     */
-  override def sorted[S >: T](ordering: Ordering[S]): RList[S] = {
+  override def insertionSort[S >: T](ordering: Ordering[S]): RList[S] = {
     /*
       insertSorted(4, [], [1,2,3,5]) =
       insertSorted(4, [1], [2,3,5]) =
@@ -491,6 +493,59 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     }
 
     insertSortTailrec(this, RNil)
+  }
+
+  override def mergeSort[S >: T](ordering: Ordering[S]): RList[S] = {
+    /*
+      merge([1,3], [2,4,5,6,7], []) =
+      merge([3], [2,4,5,6,7], [1]) =
+      merge([3], [4,5,6,7], [2,1]) =
+      merge([], [4,5,6,7], [3,2,1]) =
+      [1,2,3] ++ [4,5,6,7] =
+      [1,2,3,4,5,6,7]
+     */
+    @tailrec
+    def merge(listA: RList[S], listB: RList[S], accumulator: RList[S]): RList[S] = {
+      if (listA.isEmpty) accumulator.reverse ++ listB
+      else if (listB.isEmpty) accumulator.reverse ++ listA
+      else if (ordering.lteq(listA.head, listB.head)) merge(listA.tail, listB, listA.head :: accumulator)
+      else merge(listA, listB.tail, listB.head :: accumulator)
+    }
+
+    /*
+      [3,1,2,5,4] => [[3],[1],[2],[5],[4]]
+
+      mst([[3],[1],[2],[5],[4]], []) =
+      = mst([[2],[5],[4]], [[1,3]])
+      = mst([[4]], [[2,5], [1,3]])
+      = mst([], [[4], [2,5], [1,3]]) =
+      = mst([[4], [2,5], [1,3]], [])
+      = mst([[1,3]], [[2,4,5]])
+      = mst([], [[1,3], [2,4,5]])
+      = mst([[1,3], [2,4,5]], [])
+      = mst([], [[1,2,3,4,5]])
+      = [1,2,3,4,5]
+
+      Complexity: O(n * log(n))
+      complexity(n) = 2 * complexity(n/2) + n
+     */
+    @tailrec
+    def mergeSortTailrec(smallLists: RList[RList[S]], bigLists: RList[RList[S]]): RList[S] = {
+      if (smallLists.isEmpty) {
+        if (bigLists.isEmpty) RNil
+        else if (bigLists.tail.isEmpty) bigLists.head
+        else mergeSortTailrec(bigLists, RNil)
+      } else if (smallLists.tail.isEmpty) {
+        mergeSortTailrec(smallLists.head :: bigLists, RNil)
+      } else {
+        val first = smallLists.head
+        val second = smallLists.tail.head
+        val merged = merge(first, second, RNil)
+        mergeSortTailrec(smallLists.tail.tail, merged :: bigLists)
+      }
+    }
+
+    mergeSortTailrec(this.map(x => x :: RNil), RNil)
   }
 }
 
@@ -565,10 +620,13 @@ object ListProblems extends App {
   def testHardFunctions() = {
     val anUnorderedList = 3 :: 1 :: 2 :: 4 :: 5 :: RNil
     val ordering = Ordering.fromLessThan[Int](_ < _)
+    val listToSort = aLargeList.sample(10)
 
     // insertion sort
-    println(anUnorderedList.sorted(ordering))
-    println(aLargeList.sample(10).sorted(ordering))
+    println(anUnorderedList.insertionSort(ordering))
+    println(listToSort.insertionSort(ordering))
+    // merge sort
+    println(listToSort.mergeSort(ordering))
   }
 
   testHardFunctions()
