@@ -4,6 +4,10 @@ import scala.annotation.tailrec
 
 object NumberProblems extends App {
 
+  /**
+    * Easy problems
+    */
+  // check if a number is prime
   def isPrime(n: Int): Boolean = {
     /*
       isPrime(11) = ipt(2)
@@ -30,12 +34,60 @@ object NumberProblems extends App {
     else isPrimeTailrec(2)
   }
 
-  println(isPrime(2))
-  println(isPrime(15))
-  println(isPrime(2003))
-  println(isPrime(2731189))
-  println(isPrime(517935871))
-  println(isPrime(1))
-  println(isPrime(0))
-  println(isPrime(-2003))
+  def testIsPrime() = {
+    println(isPrime(2))
+    println(isPrime(15))
+    println(isPrime(2003))
+    println(isPrime(2731189))
+    println(isPrime(517935871))
+    println(isPrime(1))
+    println(isPrime(0))
+    println(isPrime(-2003))
+  }
+
+  // the constituent prime divisors
+  def decompose(n: Int): List[Int] = {
+    assert(n >= 0)
+
+    /*
+      decompose(11) = decomposeTailrec(11, 2, [])
+      = decomposeTailrec(11, 3, [])
+      = decomposeTailrec(11, 4, [])
+      = [11]
+
+      decompose(15) = decomposeTailrec(15, 2, [])
+      = decomposeTailrec(15, 3, [])
+      = decomposeTailrec(5, 3, [3])
+      = [5,3]
+
+      decompose(16) = decomposeTailrec(16, 2, [])
+      = decomposeTailrec(8, 2, [2])
+      = decomposeTailrec(4, 2, [2,2])
+      = decomposeTailrec(2, 2, [2,2,2])
+      = [2,2,2,2]
+
+      Complexity: O(sqrt(N)); can be as low as O(log(N))
+     */
+    @tailrec
+    def decomposeTailrec(remaining: Int, currentDivisor: Int, accumulator: List[Int]): List[Int] = {
+      if (currentDivisor > Math.sqrt(remaining)) remaining :: accumulator
+      else if (remaining % currentDivisor == 0) decomposeTailrec(remaining / currentDivisor, currentDivisor, currentDivisor :: accumulator)
+      else decomposeTailrec(remaining, currentDivisor + 1, accumulator)
+    }
+
+    decomposeTailrec(n, 2, List())
+  }
+
+  def testDecompose() = {
+    println(decompose(2))
+    println(decompose(15))
+    println(decompose(2003))
+    println(decompose(2731189))
+    println(decompose(517935871))
+    println(decompose(1))
+    println(decompose(0))
+    println(decompose(-2003))
+  }
+
+  testDecompose()
 }
