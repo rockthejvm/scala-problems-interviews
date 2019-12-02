@@ -48,6 +48,48 @@ object ParenthesisProblems extends App {
   }
 
 
-  
+  /*
+    n = 1 => List("()")
+    n = 2 => List("()()", "(())")
+    n = 3 => List("()()()", "()(())", "(())()", "((()))", "(()())")
+   */
+  def generateAllValidParentheses(n: Int): List[String] = {
+    /*
+      () + () = prepend () = ()()
+      ( + () + ) = inject () = (())
+      () + () = append () = ()()
+      => [()(), (())]
+
+     */
+    @tailrec
+    def genParensTailrec(nRemainingParens: Int, currentStrings: Set[String]): Set[String] = {
+      if (nRemainingParens == 0) currentStrings
+      else {
+        val newStrings = for {
+          string <- currentStrings
+          index <- 0 until string.length
+        } yield {
+          val (before, after) = string.splitAt(index)
+          s"$before()$after"
+        }
+
+        genParensTailrec(nRemainingParens - 1, newStrings)
+      }
+    }
+
+    assert(n >= 0)
+
+    if (n == 0) List()
+    else genParensTailrec(n-1, Set("()")).toList
+  }
+
+  def testGenParens() = {
+    println(generateAllValidParentheses(1))
+    println(generateAllValidParentheses(2))
+    println(generateAllValidParentheses(3))
+    println(generateAllValidParentheses(10))
+  }
+
+  testGenParens()
 
 }
