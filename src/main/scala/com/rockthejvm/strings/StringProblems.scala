@@ -25,7 +25,21 @@ object StringProblems extends App {
     countCharactersTailrec(s, Map())
   }
 
-  println(countCharacters("Scala"))
-  println(countCharacters("I love Scala and functional programming because it's awesome!"))
+  def testCountCharacters() = {
+    println(countCharacters("Scala"))
+    println(countCharacters("I love Scala and functional programming because it's awesome!"))
+  }
 
+
+  def checkAnagrams(sa: String, sb: String): Boolean = countCharacters(sa) == countCharacters(sb)
+  def checkAnagrams2(sa: String, sb: String): Boolean = sa.sorted == sb.sorted
+
+  def testCheckAnagrams() = {
+    println(checkAnagrams("desserts", "stressed"))
+    println(checkAnagrams("Scala", "Haskell"))
+    println(checkAnagrams2("desserts", "stressed"))
+    println(checkAnagrams2("Scala", "Haskell"))
+  }
+
+  testCheckAnagrams()
 }
