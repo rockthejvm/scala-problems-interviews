@@ -20,6 +20,9 @@ sealed abstract class BTree[+T] {
     */
   // the number of nodes in the tree
   def size: Int
+
+  // nodes at a given level
+  def collectNodes(level: Int): List[BTree[T]]
 }
 
 case object BEnd extends BTree[Nothing] {
@@ -40,6 +43,9 @@ case object BEnd extends BTree[Nothing] {
     */
   // the number of nodes in the tree
   override val size: Int = 0
+
+  // nodes at a given level
+  override def collectNodes(level: Int): List[BTree[Nothing]] = List()
 }
 
 case class BNode[+T](override val value: T, override val left: BTree[T], override val right: BTree[T]) extends BTree[T] {
@@ -95,6 +101,42 @@ case class BNode[+T](override val value: T, override val left: BTree[T], overrid
   // the number of nodes in the tree
   override val size: Int = 1 + left.size + right.size
 
+  // nodes at a given level
+  override def collectNodes(level: Int): List[BTree[T]] = {
+    /*
+            _____1_____
+           /           \
+         __2__       __6__
+        /     \     /     \
+        3     4     7     8
+               \
+                5
+
+        level = 2
+
+       cnt(0, [{1}])
+       = cnt(1, [{2}, {6}])
+       = cnt(2, [{3}, {4}, {7}, {8}])
+       = [{3}, {4}, {7}, {8}]
+     */
+    @tailrec
+    def collectNodesTailrec(currentLevel: Int, currentNodes: List[BTree[T]]): List[BTree[T]] = {
+      if (currentNodes.isEmpty) List()
+      else if (currentLevel == level) currentNodes
+      else {
+        val expandedNodes = for {
+          node <- currentNodes
+          child <- List(node.left, node.right) if !child.isEmpty
+        } yield child
+
+        collectNodesTailrec(currentLevel + 1, expandedNodes)
+      }
+    }
+
+    if (level < 0) List()
+    else collectNodesTailrec(0, List(this))
+  }
+
 }
 
 object BinaryTreeProblems extends App {
@@ -123,6 +165,12 @@ object BinaryTreeProblems extends App {
     * Medium difficulty problems
     */
 
+  // tree size
   val degenerate = (1 to 100000).foldLeft[BTree[Int]](BEnd)((tree, number) => BNode(number, tree, BEnd))
   println(degenerate.size)
+
+  // collect nodes at a given level
+  println(tree.collectNodes(0).map(_.value))
+  println(tree.collectNodes(2).map(_.value))
+  println(tree.collectNodes(6473).map(_.value))
 }
