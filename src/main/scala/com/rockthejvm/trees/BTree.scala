@@ -23,6 +23,18 @@ sealed abstract class BTree[+T] {
 
   // nodes at a given level
   def collectNodes(level: Int): List[BTree[T]]
+
+  // mirror a tree
+  /*
+        _____1_____                     _____1_____
+       /           \                   /           \
+     __2__       __6__       ->      __6__       __2__
+    /     \     /     \             /     \     /     \
+    3     4     7     8             8     7     4     3
+           \                                   /
+            5                                 5
+   */
+  def mirror: BTree[T]
 }
 
 case object BEnd extends BTree[Nothing] {
@@ -46,6 +58,9 @@ case object BEnd extends BTree[Nothing] {
 
   // nodes at a given level
   override def collectNodes(level: Int): List[BTree[Nothing]] = List()
+
+  // mirror
+  override def mirror: BTree[Nothing] = BEnd
 }
 
 case class BNode[+T](override val value: T, override val left: BTree[T], override val right: BTree[T]) extends BTree[T] {
@@ -137,6 +152,55 @@ case class BNode[+T](override val value: T, override val left: BTree[T], overrid
     else collectNodesTailrec(0, List(this))
   }
 
+  // mirror/swap children inside the tree
+  override def mirror: BTree[T] = {
+    /*
+        _____1_____                     _____1_____
+       /           \                   /           \
+     __2__       __6__       ->      __6__       __2__
+    /     \     /     \             /     \     /     \
+    3     4     7     8             8     7     4     3
+           \                                   /
+            5                                 5
+
+    mt([1], [], []) =
+    mt([2,6,1], [1], []) =
+    mt([3,4,2,6,1], [1,2], []) =
+    mt([4,2,6,1], [1,2], [3]) =
+    mt([End, 5, 4,2,6,1], [1,2,4], [3]) =
+    mt([5,4,2,6,1], [1,2,4], [End, 3]) =
+    mt([4,2,6,1], [1,2,4], [5, End, 3]) =
+    mt([2,6,1], [1,2,4], [(4 5 End), 3]) =
+    mt([6,1], [1,2,4], [(2 (4 5 End) 3)] =
+    mt([7,8,6,1], [1,2,4,6], [(2 (4 5 End) 3)]) =
+    mt([8,6,1], [1,2,4,6], [7, (2 (4 5 End) 3)]) =
+    mt([6,1], [1,2,4,6], [8,7, (2 (4 5 End) 3)]) =
+    mt([1], [1,2,4,6], [(6 8 7), (2 (4 5 End) 3)]) =
+    mt([], [1,2,4,6], [(1 (6 8 7) (2 (4 5 End) 3)]) =
+    (1 (6 8 7) (2 (4 5 End) 3)
+
+    Complexity: O(N)
+     */
+    @tailrec
+    def mirrorTailrec(todo: List[BTree[T]], expanded: Set[BTree[T]], done: List[BTree[T]]): BTree[T] = {
+      if (todo.isEmpty) done.head
+      else {
+        val node = todo.head
+        if (node.isEmpty || node.isLeaf) {
+          mirrorTailrec(todo.tail, expanded, node :: done)
+        } else if (!expanded.contains(node)) {
+          mirrorTailrec(node.left :: node.right :: todo, expanded + node, done)
+        } else {
+          val newLeft = done.head
+          val newRight = done.tail.head
+          val newNode = BNode(node.value, newLeft, newRight)
+          mirrorTailrec(todo.tail, expanded, newNode :: done.drop(2))
+        }
+      }
+    }
+
+    mirrorTailrec(List(this), Set(), List())
+  }
 }
 
 object BinaryTreeProblems extends App {
@@ -173,4 +237,7 @@ object BinaryTreeProblems extends App {
   println(tree.collectNodes(0).map(_.value))
   println(tree.collectNodes(2).map(_.value))
   println(tree.collectNodes(6473).map(_.value))
+
+  // mirroring
+  println(tree.mirror)
 }
