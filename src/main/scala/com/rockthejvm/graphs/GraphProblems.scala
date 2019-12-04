@@ -67,4 +67,50 @@ object GraphProblems extends App {
   println(isPath(socialNetwork, "Alice", "Mary")) // true
   println(isPath(socialNetwork, "Bob", "Mary")) // false
 
+  def findPath[T](graph: Graph[T], start: T, end: T): List[T] = {
+    /*
+      Charlie -> Mary
+
+      fpt([(Charlie, [Charlie])], []) =
+        neighbors = [David]
+        tuples = [(David, [David, Charlie])]
+
+      fpt([(David, [David, Charlie])], [Charlie]) =
+        neighbors = [Bob, Mary]
+        tuples = [(Bob, [Bob, David, Charlie], (Mary [Mary, David, Charlie])]
+
+      fpt([(Bob, [Bob, David, Charlie]), (Mary [Mary, David, Charlie])], [David, Charlie]) =
+        neighbors = []
+        tuples = []
+
+      fpt([(Mary, [Mary, David, Charlie])], [David, Charlie, Bob]) =
+
+      [Charlie, David, Mary]
+     */
+    @tailrec
+    def findPathTailrec(remaining: List[(T, List[T])], consideredNodes: Set[T]): List[T] = {
+      if (remaining.isEmpty) List()
+      else {
+        val (node, currentPath) = remaining.head
+        if (node == end) currentPath.reverse
+        else if (consideredNodes.contains(node)) findPathTailrec(remaining.tail, consideredNodes)
+        else {
+          val neighbors = graph(node)
+          val tuples = neighbors.map(n => (n, n :: currentPath))
+          findPathTailrec(remaining.tail ++ tuples, consideredNodes + node)
+        }
+      }
+    }
+
+    findPathTailrec(graph(start).map(n => (n, n :: List(start))).toList, Set(start))
+  }
+
+  def findCycle[T](graph: Graph[T], node: T): List[T] = findPath(graph, node, node)
+
+  println(findPath(socialNetwork, "Charlie", "Mary"))
+  println(findPath(socialNetwork, "Alice", "Mary"))
+  println(findPath(socialNetwork, "Bob", "Mary"))
+  // test cycles
+  println(findCycle(socialNetwork, "Alice")) // List
+
 }
