@@ -19,16 +19,20 @@ object GraphProblems extends App {
     */
 
   // number of nodes this node `node` is associated (adjacent) to
-  def outDegree[T](graph: Graph[T], node: T): Int =
+  def outDegree[T](graph: Graph[T], node: T): Int = {
     if (graph.contains(node)) graph(node).size
     else 0
+  }
 
   // number of nodes connected to `node`
-  def inDegree[T](graph: Graph[T], node: T): Int =
+  def inDegree[T](graph: Graph[T], node: T): Int = {
     graph.values.count(_.contains(node))
+  }
 
-  println(outDegree(socialNetwork, "Alice")) // 3
-  println(inDegree(socialNetwork, "David")) // 2
+  def testDegrees(): Unit = {
+    println(outDegree(socialNetwork, "Alice")) // 3
+    println(inDegree(socialNetwork, "David")) // 2
+  }
 
   /**
     * Medium difficulty problems
@@ -64,8 +68,10 @@ object GraphProblems extends App {
     isPathTailrec(List(start), Set())
   }
 
-  println(isPath(socialNetwork, "Alice", "Mary")) // true
-  println(isPath(socialNetwork, "Bob", "Mary")) // false
+  def testPaths(): Unit = {
+    println(isPath(socialNetwork, "Alice", "Mary")) // true
+    println(isPath(socialNetwork, "Bob", "Mary")) // false
+  }
 
   def findPath[T](graph: Graph[T], start: T, end: T): List[T] = {
     /*
@@ -107,10 +113,14 @@ object GraphProblems extends App {
 
   def findCycle[T](graph: Graph[T], node: T): List[T] = findPath(graph, node, node)
 
-  println(findPath(socialNetwork, "Charlie", "Mary"))
-  println(findPath(socialNetwork, "Alice", "Mary"))
-  println(findPath(socialNetwork, "Bob", "Mary"))
-  // test cycles
-  println(findCycle(socialNetwork, "Alice")) // List
+  def testFindPath(): Unit = {
+    println(findPath(socialNetwork, "Charlie", "Mary"))
+    println(findPath(socialNetwork, "Alice", "Mary"))
+    println(findPath(socialNetwork, "Bob", "Mary"))
+  }
+
+  def testCycles(): Unit = {
+    println(findCycle(socialNetwork, "Alice")) // List
+  }
 
 }
