@@ -28,20 +28,46 @@ The repository was built while recording the lectures. Prior to each lecture, I 
 
 The tags are as follows:
 
-* `start`
-* `lists-prep`
-* `lists-get-kth`
-* `lists-length`
+* `approximate-pi`
+* `check-valid-parentheses`
+* `enhancing-numbers`
+* `eval`
+* `generate-parentheses`
+* `graph-coloring`
+* `graphs-find-path`
+* `graphs-intro`
+* `graphs-ispath`
+* `graphs-make-unordered`
 * `lists-append`
-* `lists-remove-kth`
 * `lists-big-3`
-* `lists-rle`
 * `lists-duplicate`
-* `lists-rotate`
-* `lists-random-sample`
+* `lists-get-kth`
 * `lists-insert-sort`
+* `lists-length`
 * `lists-merge-sort`
+* `lists-prep`
 * `lists-quick-sort`
+* `lists-random-sample`
+* `lists-remove-kth`
+* `lists-reverse`
+* `lists-rle`
+* `lists-rotate`
+* `n-queens`
+* `numbers-decompose`
+* `numbers-primes`
+* `recurring-decimals`
+* `sierpinski`
+* `start`
+* `strings-anagrams`
+* `strings-count-chars`
+* `strings-justify`
+* `trees-clean`
+* `trees-collect-at-level`
+* `trees-intro`
+* `trees-leaves`
+* `trees-mirror`
+* `trees-same-shape`
+* `trees-size`
 
 When you watch a lecture, you can `git checkout` the appropriate tag and the repo will go back to the exact code I had when I started the lecture.
 
