@@ -28,16 +28,11 @@ The repository was built while recording the lectures. Prior to each lecture, I 
 
 The tags are as follows:
 
-* `approximate-pi`
-* `check-valid-parentheses`
-* `enhancing-numbers`
-* `eval`
-* `generate-parentheses`
-* `graph-coloring`
-* `graphs-find-path`
+* `graphs-coloring`
+* `graphs-find-paths`
 * `graphs-intro`
-* `graphs-ispath`
-* `graphs-make-unordered`
+* `graphs-make-undirected`
+* `graphs-paths`
 * `lists-append`
 * `lists-big-3`
 * `lists-duplicate`
@@ -52,17 +47,21 @@ The tags are as follows:
 * `lists-reverse`
 * `lists-rle`
 * `lists-rotate`
-* `n-queens`
+* `misc-eval`
+* `misc-n-queens`
+* `misc-sierpinski`
+* `numbers-approximate-pi`
 * `numbers-decompose`
+* `numbers-enhancing`
 * `numbers-primes`
-* `recurring-decimals`
-* `sierpinski`
+* `numbers-recurring-decimals`
 * `start`
-* `strings-anagrams`
+* `strings-anagram-checks`
 * `strings-count-chars`
+* `strings-generate-parentheses`
 * `strings-justify`
-* `trees-clean`
-* `trees-collect-at-level`
+* `strings-valid-parentheses`
+* `trees-collect-nodes-at-level`
 * `trees-intro`
 * `trees-leaves`
 * `trees-mirror`
