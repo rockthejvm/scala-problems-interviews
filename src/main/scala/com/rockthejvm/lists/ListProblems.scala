@@ -536,7 +536,8 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
         else if (bigLists.tail.isEmpty) bigLists.head
         else mergeSortTailrec(bigLists, RNil)
       } else if (smallLists.tail.isEmpty) {
-        mergeSortTailrec(smallLists.head :: bigLists, RNil)
+        if (bigLists.isEmpty) smallLists.head
+        else mergeSortTailrec(smallLists.head :: bigLists, RNil)
       } else {
         val first = smallLists.head
         val second = smallLists.tail.head
