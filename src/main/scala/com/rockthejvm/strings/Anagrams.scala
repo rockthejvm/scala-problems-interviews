@@ -1,6 +1,6 @@
 package com.rockthejvm.strings
 
-object CheckAnagrams {
+object Anagrams {
 
   import CountCharacters._
 
