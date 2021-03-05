@@ -2,17 +2,17 @@ package com.rockthejvm.trees
 
 import scala.annotation.tailrec
 
-sealed abstract class BTree[+T] {
+sealed abstract class Tree[+T] {
   def value: T
-  def left: BTree[T]
-  def right: BTree[T]
+  def left: Tree[T]
+  def right: Tree[T]
   def isEmpty: Boolean
 
   /**
     * Easy problems
     */
   def isLeaf: Boolean
-  def collectLeaves: List[BTree[T]]
+  def collectLeaves: List[Tree[T]]
   def leafCount: Int
 
   /**
@@ -22,7 +22,7 @@ sealed abstract class BTree[+T] {
   def size: Int
 
   // nodes at a given level
-  def collectNodes(level: Int): List[BTree[T]]
+  def collectNodes(level: Int): List[Tree[T]]
 
   // mirror a tree
   /*
@@ -34,7 +34,7 @@ sealed abstract class BTree[+T] {
            \                                   /
             5                                 5
    */
-  def mirror: BTree[T]
+  def mirror: Tree[T]
 
   // compare the shape of two trees
   /*
@@ -46,7 +46,7 @@ sealed abstract class BTree[+T] {
            \                               \
             5                               4
   */
-  def sameShapeAs[S >: T](that: BTree[S]): Boolean
+  def sameShapeAs[S >: T](that: Tree[S]): Boolean
 
   // tree is symmetrical with respect to the root node
   /*
@@ -59,17 +59,17 @@ sealed abstract class BTree[+T] {
   def isSymmetrical: Boolean
 }
 
-case object BEnd extends BTree[Nothing] {
+case object End extends Tree[Nothing] {
   override def value: Nothing = throw new NoSuchElementException
-  override def left: BTree[Nothing] = throw new NoSuchElementException
-  override def right: BTree[Nothing] = throw new NoSuchElementException
+  override def left: Tree[Nothing] = throw new NoSuchElementException
+  override def right: Tree[Nothing] = throw new NoSuchElementException
   override def isEmpty: Boolean = true
 
   /**
     * Easy problems
     */
   override def isLeaf: Boolean = false
-  override def collectLeaves: List[BTree[Nothing]] = List()
+  override def collectLeaves: List[Tree[Nothing]] = List()
   override def leafCount: Int = 0
 
   /**
@@ -79,19 +79,19 @@ case object BEnd extends BTree[Nothing] {
   override val size: Int = 0
 
   // nodes at a given level
-  override def collectNodes(level: Int): List[BTree[Nothing]] = List()
+  override def collectNodes(level: Int): List[Tree[Nothing]] = List()
 
   // mirror
-  override def mirror: BTree[Nothing] = BEnd
+  override def mirror: Tree[Nothing] = End
 
   // structure comparison
-  override def sameShapeAs[S >: Nothing](that: BTree[S]): Boolean = that.isEmpty
+  override def sameShapeAs[S >: Nothing](that: Tree[S]): Boolean = that.isEmpty
 
   // symmetrical
   override def isSymmetrical: Boolean = true
 }
 
-case class BNode[+T](override val value: T, override val left: BTree[T], override val right: BTree[T]) extends BTree[T] {
+case class Node[+T](override val value: T, override val left: Tree[T], override val right: Tree[T]) extends Tree[T] {
   override def isEmpty: Boolean = false
 
   /**
@@ -99,7 +99,7 @@ case class BNode[+T](override val value: T, override val left: BTree[T], overrid
     */
   override def isLeaf: Boolean = left.isEmpty && right.isEmpty
 
-  override def collectLeaves: List[BTree[T]] = {
+  override def collectLeaves: List[Tree[T]] = {
     /*
 
         _____1_____
@@ -123,7 +123,7 @@ case class BNode[+T](override val value: T, override val left: BTree[T], overrid
 
      */
     @tailrec
-    def collectLeavesTailrec(todo: List[BTree[T]], leaves: List[BTree[T]]): List[BTree[T]] = {
+    def collectLeavesTailrec(todo: List[Tree[T]], leaves: List[Tree[T]]): List[Tree[T]] = {
       if (todo.isEmpty) leaves
       else if (todo.head.isEmpty) collectLeavesTailrec(todo.tail, leaves)
       else if (todo.head.isLeaf) collectLeavesTailrec(todo.tail, todo.head :: leaves)
@@ -145,7 +145,7 @@ case class BNode[+T](override val value: T, override val left: BTree[T], overrid
   override val size: Int = 1 + left.size + right.size
 
   // nodes at a given level
-  override def collectNodes(level: Int): List[BTree[T]] = {
+  override def collectNodes(level: Int): List[Tree[T]] = {
     /*
             _____1_____
            /           \
@@ -163,7 +163,7 @@ case class BNode[+T](override val value: T, override val left: BTree[T], overrid
        = [{3}, {4}, {7}, {8}]
      */
     @tailrec
-    def collectNodesTailrec(currentLevel: Int, currentNodes: List[BTree[T]]): List[BTree[T]] = {
+    def collectNodesTailrec(currentLevel: Int, currentNodes: List[Tree[T]]): List[Tree[T]] = {
       if (currentNodes.isEmpty) List()
       else if (currentLevel == level) currentNodes
       else {
@@ -181,7 +181,7 @@ case class BNode[+T](override val value: T, override val left: BTree[T], overrid
   }
 
   // mirror/swap children inside the tree
-  override def mirror: BTree[T] = {
+  override def mirror: Tree[T] = {
     /*
         _____1_____                     _____1_____
        /           \                   /           \
@@ -210,7 +210,7 @@ case class BNode[+T](override val value: T, override val left: BTree[T], overrid
     Complexity: O(N)
      */
     @tailrec
-    def mirrorTailrec(todo: List[BTree[T]], expanded: Set[BTree[T]], done: List[BTree[T]]): BTree[T] = {
+    def mirrorTailrec(todo: List[Tree[T]], expanded: Set[Tree[T]], done: List[Tree[T]]): Tree[T] = {
       if (todo.isEmpty) done.head
       else {
         val node = todo.head
@@ -221,7 +221,7 @@ case class BNode[+T](override val value: T, override val left: BTree[T], overrid
         } else {
           val newLeft = done.head
           val newRight = done.tail.head
-          val newNode = BNode(node.value, newLeft, newRight)
+          val newNode = Node(node.value, newLeft, newRight)
           mirrorTailrec(todo.tail, expanded, newNode :: done.drop(2))
         }
       }
@@ -231,7 +231,7 @@ case class BNode[+T](override val value: T, override val left: BTree[T], overrid
   }
 
   // shape comparison
-  override def sameShapeAs[S >: T](that: BTree[S]): Boolean = {
+  override def sameShapeAs[S >: T](that: Tree[S]): Boolean = {
     /*
         _____1_____                     _____8_____
        /           \                   /           \
@@ -256,7 +256,7 @@ case class BNode[+T](override val value: T, override val left: BTree[T], overrid
         Complexity: O(max(N1, N2))
      */
     @tailrec
-    def sameShapeAsTailrec(thisRemaining: List[BTree[S]], thatRemaining: List[BTree[S]]): Boolean = {
+    def sameShapeAsTailrec(thisRemaining: List[Tree[S]], thatRemaining: List[Tree[S]]): Boolean = {
       if (thisRemaining.isEmpty) thatRemaining.isEmpty
       else if (thatRemaining.isEmpty) thisRemaining.isEmpty
       else {
@@ -281,45 +281,45 @@ case class BNode[+T](override val value: T, override val left: BTree[T], overrid
 
 object BinaryTreeProblems extends App {
 
-  val tree = BNode(1,
-    BNode(2,
-      BNode(3, BEnd, BEnd),
-      BNode(4,
-        BEnd,
-        BNode(5, BEnd, BEnd),
+  val tree = Node(1,
+    Node(2,
+      Node(3, End, End),
+      Node(4,
+        End,
+        Node(5, End, End),
       )
     ),
-    BNode(6,
-      BNode(7, BEnd, BEnd),
-      BNode(8, BEnd, BEnd)
+    Node(6,
+      Node(7, End, End),
+      Node(8, End, End)
     )
   )
 
-  val tree10x = BNode(10,
-    BNode(20,
-      BNode(30, BEnd, BEnd),
-      BNode(40,
-        BEnd,
-        BNode(50, BEnd, BEnd),
+  val tree10x = Node(10,
+    Node(20,
+      Node(30, End, End),
+      Node(40,
+        End,
+        Node(50, End, End),
       )
     ),
-    BNode(60,
-      BNode(70, BEnd, BEnd),
-      BNode(80, BEnd, BEnd)
+    Node(60,
+      Node(70, End, End),
+      Node(80, End, End)
     )
   )
 
-  val tree10xExtra = BNode(10,
-    BNode(20,
-      BNode(30, BEnd, BEnd),
-      BNode(40,
-        BEnd,
-        BEnd
+  val tree10xExtra = Node(10,
+    Node(20,
+      Node(30, End, End),
+      Node(40,
+        End,
+        End
       )
     ),
-    BNode(60,
-      BNode(70, BEnd, BEnd),
-      BNode(80, BEnd, BEnd)
+    Node(60,
+      Node(70, End, End),
+      Node(80, End, End)
     )
   )
 
@@ -334,7 +334,7 @@ object BinaryTreeProblems extends App {
     */
 
   // tree size
-  val degenerate = (1 to 100000).foldLeft[BTree[Int]](BEnd)((tree, number) => BNode(number, tree, BEnd))
+  val degenerate = (1 to 100000).foldLeft[Tree[Int]](End)((tree, number) => Node(number, tree, End))
   println(degenerate.size)
 
   // collect nodes at a given level
