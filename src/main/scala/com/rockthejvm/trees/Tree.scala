@@ -1,6 +1,7 @@
 package com.rockthejvm.trees
 
 import scala.annotation.tailrec
+import scala.collection.immutable.Queue
 
 sealed abstract class Tree[+T] {
   def value: T
@@ -57,6 +58,9 @@ sealed abstract class Tree[+T] {
     3     4     7     8
    */
   def isSymmetrical: Boolean
+
+  // collect all nodes to a list
+  def toList: List[T]
 }
 
 case object End extends Tree[Nothing] {
@@ -89,6 +93,9 @@ case object End extends Tree[Nothing] {
 
   // symmetrical
   override def isSymmetrical: Boolean = true
+
+  // collect nodes to list
+  override def toList: List[Nothing] = List()
 }
 
 case class Node[+T](override val value: T, override val left: Tree[T], override val right: Tree[T]) extends Tree[T] {
@@ -277,6 +284,73 @@ case class Node[+T](override val value: T, override val left: Tree[T], override 
 
   // symmetry
   override def isSymmetrical: Boolean = sameShapeAs(this.mirror)
+
+  // collect to list
+  /*
+
+            _____1_____
+           /           \
+         __2__       __6__
+        /     \     /     \
+        3     4     7     8
+               \
+                5
+
+    Options:
+    - pre-order: [1 2 3 4 5 6 7 8]
+    - in-order: [3 2 4 5 1 7 6 8]
+    - post-order: [3 5 4 2 7 6 8 1]
+    - per-level: [1 2 6 3 4 7 8 5]
+   */
+  override def toList: List[T] = {
+    def preOrderStack(tree: Tree[T]): List[T] =
+      if (tree.isEmpty) List()
+      else tree.value :: preOrderStack(tree.left) ++ preOrderStack(tree.right)
+
+    /*
+      pot([1], [], []) =
+      pot([1 2 6], [1], []) =
+      pot([2 6], [1], [1]) =
+      pot([2 3 4 6], [1 2], [1]) =
+      pot([3 4 6], [1 2], [1 2]) =
+      pot([4 6], [1 2], [1 2 3] =
+      pot([4 5 6], [1 2 4], [1 2 3]) =
+      pot([5 6], [1 2 4], [1 2 3 4]) =
+      pot([6], [1 2 4], [1 2 3 4 5]) =
+      pot([6 7 8], [1 2 4 6], [1 2 3 4 5]) =
+      pot([7 8], [1 2 4 6], [1 2 3 4 5 6]) =
+      pot([8], [1 2 4 6], [1 2 3 4 5 6 7]) =
+      pot([], [1 2 4 6], [1 2 3 4 5 6 7 8]) =
+      [1 2 3 4 5 6 7 8]
+     */
+    @tailrec
+    def preOrderTailrec(stack: List[Tree[T]], visited: Set[Tree[T]] = Set(), acc: Queue[T] = Queue()): List[T] =
+      if (stack.isEmpty) acc.toList
+      else {
+        val node = stack.head
+        if (node.isEmpty) preOrderTailrec(stack.tail, visited, acc)
+        else if (node.isLeaf || visited.contains(node)) preOrderTailrec(stack.tail, visited, acc :+ node.value)
+        else preOrderTailrec(node :: node.left :: node.right :: stack.tail, visited + node, acc)
+      }
+
+    /*
+      plt([1], []) =
+      plt([2, 6], [1]) =
+      plt([3,4,7,8], [1 2 6]) =
+      plt([5], [1 2 6 3 4 7 8]) =
+      plt([], [1 2 6 3 4 7 8 5]) =
+      [1 2 6 3 4 7 8 5]
+     */
+    @tailrec
+    def perLevelTailrec(level: List[Tree[T]], finalQueue: Queue[Tree[T]] = Queue()): List[T] =
+      if (level.isEmpty) finalQueue.map(_.value).toList
+      else perLevelTailrec(
+        level.flatMap(node => List(node.left, node.right).filter(!_.isEmpty)),
+        finalQueue ++ level
+      )
+
+    perLevelTailrec(List(this))
+  }
 }
 
 object BinaryTreeProblems extends App {
@@ -350,4 +424,6 @@ object BinaryTreeProblems extends App {
   println(tree.sameShapeAs(tree10xExtra))
   // symmetry
   println(tree10xExtra.isSymmetrical)
+  // collect nodes as list
+  println(tree.toList)
 }
