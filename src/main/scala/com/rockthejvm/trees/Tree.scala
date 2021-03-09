@@ -353,6 +353,12 @@ case class Node[+T](override val value: T, override val left: Tree[T], override 
   }
 }
 
+object Tree {
+  def apply[T](): Tree[T] = End
+  def apply[T](value: T): Tree[T] = Node(value, End, End)
+  def apply[T](value: T, left: Tree[T], right: Tree[T]): Tree[T] = Node(value, left, right)
+}
+
 object BinaryTreeProblems extends App {
 
   val tree = Node(1,
