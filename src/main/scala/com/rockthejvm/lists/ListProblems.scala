@@ -352,8 +352,7 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
      */
     @tailrec
     def rleTailrec(remaining: RList[T], currentTuple: (T, Int), accumulator: RList[(T, Int)]): RList[(T, Int)] = {
-      if (remaining.isEmpty && currentTuple._2 == 0) accumulator
-      else if (remaining.isEmpty) currentTuple :: accumulator
+      if (remaining.isEmpty) currentTuple :: accumulator
       else if (remaining.head == currentTuple._1) rleTailrec(remaining.tail, currentTuple.copy(_2 = currentTuple._2 + 1), accumulator)
       else rleTailrec(remaining.tail, (remaining.head, 1), currentTuple :: accumulator)
     }
