@@ -22,8 +22,7 @@ object PathSum {
     def hasPathSumStack(tree: Tree[Int], target: Int): Boolean =
       if (tree.isEmpty) target == 0
       else if (tree.isLeaf) target == tree.value
-      else if (tree.left.isEmpty) hasPathSumStack(tree.right, target - tree.value)
-      else hasPathSumStack(tree.left, target - tree.value)
+      else hasPathSumStack(tree.right, target - tree.value) || hasPathSumStack(tree.left, target - tree.value)
 
     /*
       hp([1], [6]) =
@@ -45,7 +44,7 @@ object PathSum {
         if (node.isLeaf && node.value == targetValue) true
         else hasPathSumTailrec(nodes.tail ++ children, targets.tail ++ childrenTargets)
       }
-
+    if (tree.isEmpty) target == 0 else  // edge case for hasPathSumTailrec
     hasPathSumTailrec(Queue(tree), Queue(target))
   }
 
@@ -149,6 +148,10 @@ object PathSum {
 
     println(hasPathSum(tree, 6)) // true
     println(hasPathSum(tree, 7)) // false
+    println(hasPathSum(tree, 14)) // true
+    println(hasPathSum(tree, 15)) // true
+    println(hasPathSum(tree, 16)) // false
+    println(hasPathSum(End, 0)) // true?
 
     val twoPathsto6 = Node(1,
       Node(2,
