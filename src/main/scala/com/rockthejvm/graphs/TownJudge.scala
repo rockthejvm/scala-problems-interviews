@@ -14,21 +14,7 @@ object TownJudge {
 
     Find the town judge, or return -1.
    */
-  def findJudge(n: Int, trust: List[(Int, Int)]): Int = {
-    val inDegrees: Map[Int, Int] = trust.foldLeft(Map[Int, Int]()) {
-      case (map, (_, b)) => map + (b -> (map.getOrElse(b, 0) + 1))
-    }
-
-    val outDegrees: Map[Int, Int] = trust.foldLeft(Map[Int, Int]()) {
-      case (map, (a, b)) => map + (a -> (map.getOrElse(a, 0) + 1))
-    }
-
-    val townJudgeOption: Option[Int] = (1 to n).find { person =>
-      inDegrees.getOrElse(person, 0) == n - 1 && outDegrees.getOrElse(person, 0) == 0
-    }
-
-    townJudgeOption.getOrElse(-1)
-  }
+  def findJudge(n: Int, trust: List[(Int, Int)]): Int = ???
 
   def main(args: Array[String]): Unit = {
     println(findJudge(2, List((1, 2)))) // 2
