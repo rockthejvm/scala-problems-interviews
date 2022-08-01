@@ -72,30 +72,30 @@ case object End extends Tree[Nothing] {
   /**
     * Easy problems
     */
-  override def isLeaf: Boolean = false
-  override def collectLeaves: List[Tree[Nothing]] = List()
-  override def leafCount: Int = 0
+  override def isLeaf: Boolean = ???
+  override def collectLeaves: List[Tree[Nothing]] = ???
+  override def leafCount: Int = ???
 
   /**
     * Medium difficulty problems
     */
   // the number of nodes in the tree
-  override val size: Int = 0
+  override val size: Int = ???
 
   // nodes at a given level
-  override def collectNodes(level: Int): List[Tree[Nothing]] = List()
+  override def collectNodes(level: Int): List[Tree[Nothing]] = ???
 
   // mirror
-  override def mirror: Tree[Nothing] = End
+  override def mirror: Tree[Nothing] = ???
 
   // structure comparison
-  override def sameShapeAs[S >: Nothing](that: Tree[S]): Boolean = that.isEmpty
+  override def sameShapeAs[S >: Nothing](that: Tree[S]): Boolean = ???
 
   // symmetrical
-  override def isSymmetrical: Boolean = true
+  override def isSymmetrical: Boolean = ???
 
   // collect nodes to list
-  override def toList: List[Nothing] = List()
+  override def toList: List[Nothing] = ???
 }
 
 case class Node[+T](override val value: T, override val left: Tree[T], override val right: Tree[T]) extends Tree[T] {
@@ -104,186 +104,29 @@ case class Node[+T](override val value: T, override val left: Tree[T], override 
   /**
     * Easy problems
     */
-  override def isLeaf: Boolean = left.isEmpty && right.isEmpty
+  override def isLeaf: Boolean = ???
 
-  override def collectLeaves: List[Tree[T]] = {
-    /*
+  override def collectLeaves: List[Tree[T]] = ???
 
-        _____1_____
-       /           \
-     __2__       __6__
-    /     \     /     \
-    3     4     7     8
-           \
-            5
-
-       clt([1], []) =
-       clt([2, 6], []) =
-       clt([3,4,6], []) =
-       clt([4,6], [3]) =
-       clt([5,6], [3]) =
-       clt([6], [5,3]) =
-       clt([7,8], [5,3]) =
-       clt([8], [7,5,3]) =
-       clt([], [8,7,5,3]) =
-       [8,7,5,3]
-
-     */
-    @tailrec
-    def collectLeavesTailrec(todo: List[Tree[T]], leaves: List[Tree[T]]): List[Tree[T]] = {
-      if (todo.isEmpty) leaves
-      else if (todo.head.isEmpty) collectLeavesTailrec(todo.tail, leaves)
-      else if (todo.head.isLeaf) collectLeavesTailrec(todo.tail, todo.head :: leaves)
-      else {
-        val node = todo.head
-        collectLeavesTailrec(node.left :: node.right :: todo.tail, leaves)
-      }
-    }
-
-    collectLeavesTailrec(List(this), List())
-  }
-
-  override def leafCount: Int = collectLeaves.length
+  override def leafCount: Int = ???
 
   /**
     * Medium difficulty problems
     */
   // the number of nodes in the tree
-  override val size: Int = 1 + left.size + right.size
+  override val size: Int = ???
 
   // nodes at a given level
-  override def collectNodes(level: Int): List[Tree[T]] = {
-    /*
-            _____1_____
-           /           \
-         __2__       __6__
-        /     \     /     \
-        3     4     7     8
-               \
-                5
-
-        level = 2
-
-       cnt(0, [{1}])
-       = cnt(1, [{2}, {6}])
-       = cnt(2, [{3}, {4}, {7}, {8}])
-       = [{3}, {4}, {7}, {8}]
-     */
-    @tailrec
-    def collectNodesTailrec(currentLevel: Int, currentNodes: List[Tree[T]]): List[Tree[T]] = {
-      if (currentNodes.isEmpty) List()
-      else if (currentLevel == level) currentNodes
-      else {
-        val expandedNodes = for {
-          node <- currentNodes
-          child <- List(node.left, node.right) if !child.isEmpty
-        } yield child
-
-        collectNodesTailrec(currentLevel + 1, expandedNodes)
-      }
-    }
-
-    if (level < 0) List()
-    else collectNodesTailrec(0, List(this))
-  }
+  override def collectNodes(level: Int): List[Tree[T]] = ???
 
   // mirror/swap children inside the tree
-  override def mirror: Tree[T] = {
-    /*
-        _____1_____                     _____1_____
-       /           \                   /           \
-     __2__       __6__       ->      __6__       __2__
-    /     \     /     \             /     \     /     \
-    3     4     7     8             8     7     4     3
-           \                                   /
-            5                                 5
-
-    mt([1], [], []) =
-    mt([2,6,1], [1], []) =
-    mt([3,4,2,6,1], [1,2], []) =
-    mt([4,2,6,1], [1,2], [3]) =
-    mt([End, 5, 4,2,6,1], [1,2,4], [3]) =
-    mt([5,4,2,6,1], [1,2,4], [End, 3]) =
-    mt([4,2,6,1], [1,2,4], [5, End, 3]) =
-    mt([2,6,1], [1,2,4], [(4 5 End), 3]) =
-    mt([6,1], [1,2,4], [(2 (4 5 End) 3)] =
-    mt([7,8,6,1], [1,2,4,6], [(2 (4 5 End) 3)]) =
-    mt([8,6,1], [1,2,4,6], [7, (2 (4 5 End) 3)]) =
-    mt([6,1], [1,2,4,6], [8,7, (2 (4 5 End) 3)]) =
-    mt([1], [1,2,4,6], [(6 8 7), (2 (4 5 End) 3)]) =
-    mt([], [1,2,4,6], [(1 (6 8 7) (2 (4 5 End) 3)]) =
-    (1 (6 8 7) (2 (4 5 End) 3)
-
-    Complexity: O(N)
-     */
-    @tailrec
-    def mirrorTailrec(todo: List[Tree[T]], expanded: Set[Tree[T]], done: List[Tree[T]]): Tree[T] = {
-      if (todo.isEmpty) done.head
-      else {
-        val node = todo.head
-        if (node.isEmpty || node.isLeaf) {
-          mirrorTailrec(todo.tail, expanded, node :: done)
-        } else if (!expanded.contains(node)) {
-          mirrorTailrec(node.left :: node.right :: todo, expanded + node, done)
-        } else {
-          val newLeft = done.head
-          val newRight = done.tail.head
-          val newNode = Node(node.value, newLeft, newRight)
-          mirrorTailrec(todo.tail, expanded, newNode :: done.drop(2))
-        }
-      }
-    }
-
-    mirrorTailrec(List(this), Set(), List())
-  }
+  override def mirror: Tree[T] = ???
 
   // shape comparison
-  override def sameShapeAs[S >: T](that: Tree[S]): Boolean = {
-    /*
-        _____1_____                     _____8_____
-       /           \                   /           \
-     __2__       __6__       ~~      __9__       __2__
-    /     \     /     \             /     \     /     \
-    3     4     7     8             1     3     2     7
-           \                               \
-            5                               4
-
-        sst([1], [8]) =
-        sst([2,6], [9,2]) =
-        sst([3,4,6], [1,3,2]) =
-        sst([4,6],[3,2]) =
-        sst([End, 5, 6], [End, 4, 2]) =
-        sst([5,6], [4,2]) =
-        sst([6], [2]) =
-        sst([7,8], [2,7]) =
-        sst([8], [7]) =
-        sst([], []) =
-        true
-
-        Complexity: O(max(N1, N2))
-     */
-    @tailrec
-    def sameShapeAsTailrec(thisRemaining: List[Tree[S]], thatRemaining: List[Tree[S]]): Boolean = {
-      if (thisRemaining.isEmpty) thatRemaining.isEmpty
-      else if (thatRemaining.isEmpty) thisRemaining.isEmpty
-      else {
-        val thisNode = thisRemaining.head
-        val thatNode = thatRemaining.head
-
-        if (thisNode.isEmpty) thatNode.isEmpty && sameShapeAsTailrec(thisRemaining.tail, thatRemaining.tail)
-        else if (thisNode.isLeaf) thatNode.isLeaf && sameShapeAsTailrec(thisRemaining.tail, thatRemaining.tail)
-        else sameShapeAsTailrec(
-          thisNode.left :: thisNode.right :: thisRemaining.tail,
-          thatNode.left :: thatNode.right :: thatRemaining.tail
-        )
-      }
-    }
-
-    sameShapeAsTailrec(List(this), List(that))
-  }
+  override def sameShapeAs[S >: T](that: Tree[S]): Boolean = ???
 
   // symmetry
-  override def isSymmetrical: Boolean = sameShapeAs(this.mirror)
+  override def isSymmetrical: Boolean = ???
 
   // collect to list
   /*
@@ -302,55 +145,7 @@ case class Node[+T](override val value: T, override val left: Tree[T], override 
     - post-order: [3 5 4 2 7 6 8 1]
     - per-level: [1 2 6 3 4 7 8 5]
    */
-  override def toList: List[T] = {
-    def preOrderStack(tree: Tree[T]): List[T] =
-      if (tree.isEmpty) List()
-      else tree.value :: preOrderStack(tree.left) ++ preOrderStack(tree.right)
-
-    /*
-      pot([1], [], []) =
-      pot([1 2 6], [1], []) =
-      pot([2 6], [1], [1]) =
-      pot([2 3 4 6], [1 2], [1]) =
-      pot([3 4 6], [1 2], [1 2]) =
-      pot([4 6], [1 2], [1 2 3] =
-      pot([4 5 6], [1 2 4], [1 2 3]) =
-      pot([5 6], [1 2 4], [1 2 3 4]) =
-      pot([6], [1 2 4], [1 2 3 4 5]) =
-      pot([6 7 8], [1 2 4 6], [1 2 3 4 5]) =
-      pot([7 8], [1 2 4 6], [1 2 3 4 5 6]) =
-      pot([8], [1 2 4 6], [1 2 3 4 5 6 7]) =
-      pot([], [1 2 4 6], [1 2 3 4 5 6 7 8]) =
-      [1 2 3 4 5 6 7 8]
-     */
-    @tailrec
-    def preOrderTailrec(stack: List[Tree[T]], visited: Set[Tree[T]] = Set(), acc: Queue[T] = Queue()): List[T] =
-      if (stack.isEmpty) acc.toList
-      else {
-        val node = stack.head
-        if (node.isEmpty) preOrderTailrec(stack.tail, visited, acc)
-        else if (node.isLeaf || visited.contains(node)) preOrderTailrec(stack.tail, visited, acc :+ node.value)
-        else preOrderTailrec(node :: node.left :: node.right :: stack.tail, visited + node, acc)
-      }
-
-    /*
-      plt([1], []) =
-      plt([2, 6], [1]) =
-      plt([3,4,7,8], [1 2 6]) =
-      plt([5], [1 2 6 3 4 7 8]) =
-      plt([], [1 2 6 3 4 7 8 5]) =
-      [1 2 6 3 4 7 8 5]
-     */
-    @tailrec
-    def perLevelTailrec(level: List[Tree[T]], finalQueue: Queue[Tree[T]] = Queue()): List[T] =
-      if (level.isEmpty) finalQueue.map(_.value).toList
-      else perLevelTailrec(
-        level.flatMap(node => List(node.left, node.right).filter(!_.isEmpty)),
-        finalQueue ++ level
-      )
-
-    perLevelTailrec(List(this))
-  }
+  override def toList: List[T] = ???
 }
 
 object Tree {
