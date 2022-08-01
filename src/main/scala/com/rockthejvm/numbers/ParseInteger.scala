@@ -12,37 +12,7 @@ object ParseInteger {
 
     "   +1234 is the number I want" => 1234
    */
-  def parseInteger(string: String): Int = {
-    val WHITESPACE = ' '
-    val PLUS = '+'
-    val MINUS = '-'
-    val DIGITS = "0123456789".toSet
-
-    def integerRangeEnd(sign: Int): Int = if (sign >= 0) Int.MaxValue else Int. MinValue
-
-    /*
-      pt("123", -1, 0)
-      = pt("23", -1, -1)
-      = pt("3", -1, -12)
-      = pt("", -1, -123)
-      = -123
-     */
-    def parseTailrec(remainder: String, sign: Int, acc: Int = 0): Int =
-      if (remainder.isEmpty || !DIGITS.contains(remainder.charAt(0))) acc
-      else {
-        val newDigit = remainder.charAt(0) - '0'
-        val tentativeResult = acc * 10 + newDigit * sign
-
-        if ((sign >= 0) != (tentativeResult >= 0)) integerRangeEnd(sign)
-        else parseTailrec(remainder.substring(1), sign, tentativeResult)
-      }
-
-    if (string.isEmpty) 0
-    else if (string.charAt(0) == WHITESPACE) parseInteger(string.substring(1))
-    else if (string.charAt(0) == PLUS) parseTailrec(string.substring(1), sign = 1)
-    else if (string.charAt(0) == MINUS) parseTailrec(string.substring(1), sign = -1)
-    else parseTailrec(string, sign = 1)
-  }
+  def parseInteger(string: String): Int = ???
 
   def main(args: Array[String]): Unit = {
     println(parseInteger("")) // 0
