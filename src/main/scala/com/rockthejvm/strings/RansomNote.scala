@@ -10,14 +10,7 @@ object RansomNote {
        if you sign up to my newsletter. It's read by 100000 people, and you'll never need to search for online discounts again."
      )
    */
-  def ransomNote(note: String, magazine: String): Boolean = {
-    def buildMap(string: String): Map[Char, Int] =
-      string.groupBy(c => c).view.mapValues(_.length).toMap
-
-    val noteMap = buildMap(note)
-    val magazineMap = buildMap(magazine)
-    noteMap.keySet.forall(char => noteMap.getOrElse(char, 0) <= magazineMap.getOrElse(char, 0))
-  }
+  def ransomNote(note: String, magazine: String): Boolean = ???
 
   def main(args: Array[String]): Unit = {
     println(
