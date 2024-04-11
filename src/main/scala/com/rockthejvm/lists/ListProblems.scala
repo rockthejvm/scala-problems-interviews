@@ -382,7 +382,7 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
       else duplicateTailrec(remaining, currentElement, nDuplications + 1, currentElement :: accumulator)
     }
 
-    duplicateTailrec(this.tail, this.head, 0, RNil)
+    if(k <= 0) RNil else duplicateTailrec(this.tail, this.head, 0, RNil)
   }
 
   // rotate by a number of positions to the left
@@ -419,6 +419,7 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
       else rotateTailrec(remaining.tail, rotationsLeft - 1, remaining.head :: buffer)
     }
 
+    assert(assertion = k >= 0, message = "k must be a positive integer")
     rotateTailrec(this, k, RNil)
   }
 
